@@ -1,0 +1,14 @@
+﻿article {
+    width: 99vh;
+    float: left;
+}
+
+button {
+    background-color: #7373D9;
+    color: white;
+}
+
+section {
+    padding-bottom: 20pt !important;
+    padding-top: 15pt !important;
+}

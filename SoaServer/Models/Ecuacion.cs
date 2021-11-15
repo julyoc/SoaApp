@@ -66,14 +66,18 @@ namespace SoaServer.Models
                 if (at.Split("x")[0].Equals("-")) b = -1;
                 else if (at.Split("x")[0].Equals("+")) b = 1;
                 else if (at.Equals("x")) b = 1;
+                else if (string.IsNullOrEmpty(at.Split("x")[0])) b = 1;
                 else b = double.Parse(at.Split("x")[0]);
                 try {
                     c = double.Parse(at.Split("x")[1]);
                 } catch(Exception) { }
             } else {
                 b = 0;
-
-                c = double.Parse(at);
+                try {
+                    c = double.Parse(at);
+                } catch(Exception) {
+                    c = 0;
+                }
             }
         }
 
@@ -125,7 +129,7 @@ namespace SoaServer.Models
         {
             var centro = -B / (2 * A);
             var arr = new Collection<double>();
-            for (double i = centro - 3; i <= centro + 3; i += 0.01) arr.Add(i);
+            for (double i = centro - 12; i <= centro + 12; i += 0.01) arr.Add(i);
             var arr1 = new Collection<double>();
             foreach (var x in arr) arr1.Add(A * Math.Pow(x, 2) + B * x + C);
             return new Collection<double>[] { arr, arr1 };

@@ -1,0 +1,14 @@
+﻿section, article {
+    height: 100vh;
+}
+
+button {
+    background-color: #7373D9;
+    color: white;
+    height: 6em;
+    font-size: 15pt;
+}
+
+button:hover {
+    color: whitesmoke;
+}
