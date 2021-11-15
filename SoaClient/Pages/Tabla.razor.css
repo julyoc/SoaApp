@@ -1,0 +1,30 @@
+﻿table{
+    overflow-y: scroll;
+    height: 400pt;
+    width: 100%;
+    display: block;
+}
+
+thead {
+    position: sticky;
+    top: 0;
+    width: 100%;
+}
+
+tbody {
+    width: 100%;
+}
+
+th, td {
+    width: 33.33%;
+}
+
+button {
+    background-color: #7373D9;
+    color: white;
+}
+
+section {
+    padding-bottom: 20pt !important;
+    padding-top: 15pt !important;
+}

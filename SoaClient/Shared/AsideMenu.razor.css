@@ -1,0 +1,32 @@
+﻿aside {
+    float: left;
+    width: 30vh;
+    height: 100vh;
+    background-color: #25567B;
+    color: white;
+    position: relative;
+}
+
+hr {
+    color: white;
+    opacity: 1;
+    height: 1.5pt;
+    border: 0;
+}
+
+.hrr {
+    padding: 0 10pt 0 10pt;
+}
+
+h2 {
+    padding-top: 10pt;
+}
+
+.hm {
+    position: absolute;
+    bottom: 10pt;
+}
+
+.c-w {
+    font-size: 15pt;
+}

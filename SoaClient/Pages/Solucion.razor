@@ -1,0 +1,74 @@
+﻿@page "/Solucion"
+@using SoaClient.Models
+@inject EcuacionService EqServ
+
+<article class="container-fluid">
+    <section class="row text-center justify-content-center">
+        <h4 class="col-11">Cálculo de la(s) Soluciones de la Ecuación </h4>
+    </section>
+    <section class="row justify-content-center text-center">
+        <h2 class="col-11"><b>f(x)=ax**2+bx+c</b></h2>
+    </section>
+    <EditForm Model="@form" OnValidSubmit="@Submit">
+        <DataAnnotationsValidator></DataAnnotationsValidator>
+        <ValidationSummary></ValidationSummary>
+        <section class="row justify-content-center text-center">
+            <div class="col-11">
+                <div class="row">
+                    <label for="eq" class="col col-form-label">Ingresar la ecuación:</label>
+                    <InputText @bind-Value="form.Eq" class="form-control col" style="width: 10em;" id="eq" name="eq"></InputText>
+                </div>
+            </div>
+        </section>
+        <section class="row justify-content-center text-center">
+            <button type="submit" class="col-4 btn">Calcular</button>
+        </section>    
+    </EditForm>
+    <section class="row justify-content-center">
+        <div class="col-10">
+            <div class="row">
+                @if (issubmit)
+                {
+                    @if (sols == null)
+                    {
+                        <label for="sol1" class="col col-form-label">La ecuacion no tiene solucion en los numeros reales.</label>
+                    }
+                    else if (sols.Count == 1)
+                    {
+                        <label for="sol1" class="col col-form-label">X=</label>
+                        <input type="text" id="sol1" name="sol1" value="@sols.Last()" class="col form-control" style="width: 2.5em;" disabled />
+                    }
+                    else
+                    {
+                        <label for="sol1" class="col col-form-label">X<sub>1</sub>=</label>
+                        <input type="text" id="sol1" name="sol1" value="@sols.First()" class="col form-control" style="width: 5em;" disabled />
+                        <label for="sol2" class="col col-form-label">X<sub>2</sub>=</label>
+                        <input type="text" id="sol2" name="sol2" value="@sols.Last()" class="col form-control" style="width: 5em;" disabled />
+                    }
+                }
+            </div>
+        </div>
+    </section>
+</article>
+
+@code {
+    private EcuacionForm form = new();
+
+    private ICollection<double> sols;
+
+    private bool issubmit = false;
+
+    private async Task Submit()
+    {
+        EqServ.Ecuacion = form.Eq;
+        sols = await EqServ.CalcularSoluciones();
+        issubmit = true;
+    }
+
+    protected override void OnInitialized()
+    {
+        if (!string.IsNullOrEmpty(EqServ.Ecuacion)) form.Eq = EqServ.Ecuacion;
+        base.OnInitialized();
+        issubmit = false;
+    }
+ }
