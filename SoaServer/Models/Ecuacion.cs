@@ -189,6 +189,10 @@ namespace SoaServer.Models
             return ret + $"{aa}x{B}";
         }
 
+        /// <summary>
+        /// Guarda la ecuacion en la base de datos.
+        /// </summary>
+        /// <returns>retorta un task de la asincronia.</returns>
         internal async Task insertEq()
         {
             using var command = Db.CreateCommand();
@@ -203,6 +207,11 @@ namespace SoaServer.Models
             Id = (int)command.LastInsertedId;
         }
 
+        /// <summary>
+        /// Guarda las soluciones en la base de datos.
+        /// </summary>
+        /// <param name="sols">valor de la solucion.</param>
+        /// <returns>retorta un task de la asincronia.</returns>
         internal async Task insertSols(double sols)
         {
             using var command = Db.CreateCommand();
@@ -220,6 +229,12 @@ namespace SoaServer.Models
             await command.ExecuteNonQueryAsync();
         }
 
+        /// <summary>
+        /// Guarda la derivada en la base de datos.
+        /// </summary>
+        /// <param name="dif">string de la derivada.</param>
+        /// <param name="grado">grado de la derivada.</param>
+        /// <returns>retorta un task de la asincronia.</returns>
         internal async Task insertDiff(string dif, int grado)
         {
             using var command = Db.CreateCommand();
