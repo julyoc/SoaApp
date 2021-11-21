@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using MySqlConnector;
 using SoaServer.Models;
 using System;
 using System.Collections.Generic;
@@ -16,9 +17,12 @@ namespace SoaServer.Controllers
     {
         private readonly ILogger<EcuacionController> _logger;
 
-        public EcuacionController(ILogger<EcuacionController> logger)
+        internal MySqlConnection Db { get; set; }
+
+        public EcuacionController(ILogger<EcuacionController> logger, MySqlConnection db)
         {
             _logger = logger;
+            Db = db;
         }
 
         /// <summary>
@@ -29,7 +33,7 @@ namespace SoaServer.Controllers
         /// <returns>Soluciones de la ecuacion</returns>
         public IActionResult CalcularSoluciones([FromQuery] string eqs)
         {
-            var eq = new Ecuacion(eqs);
+            var eq = new Ecuacion(eqs, Db);
             var sol = eq.Soluciones();
             _logger.LogInformation("Calculo de la(s) soluciones:", sol);
             if (eq.D < 0) _logger.LogError("El determinante es menor que 0.", eq.D);
@@ -44,7 +48,7 @@ namespace SoaServer.Controllers
         /// <returns>Tabla de valores <c>(x, y)</c></returns>
         public IActionResult CalcularTablaDeValores([FromQuery] string eqs)
         {
-            var eq = new Ecuacion(eqs);
+            var eq = new Ecuacion(eqs, Db);
             var sol = eq.TablaValores();
             _logger.LogInformation("Calculo de la tabla de valores:", sol);
             return Ok(sol);
@@ -58,7 +62,7 @@ namespace SoaServer.Controllers
         /// <returns>Tabla de valores <c>(x, y)</c></returns>
         public IActionResult CalcularTablaDeValoresXl([FromQuery] string eqs)
         {
-            var eq = new Ecuacion(eqs);
+            var eq = new Ecuacion(eqs, Db);
             var sol = eq.TablaValoresXl();
             _logger.LogInformation("Calculo de la tabla de valores:", sol);
             return Ok(sol);
@@ -73,7 +77,7 @@ namespace SoaServer.Controllers
         /// <returns>String de la ecuacion ya deribada</returns>
         public IActionResult CalcularDerivadas([FromQuery] string eqs, [FromQuery] uint n)
         {
-            var eq = new Ecuacion(eqs);
+            var eq = new Ecuacion(eqs, Db);
             var sol = eq.Derivada(n);
             _logger.LogInformation($"Calculo de la {n} derivada:", sol);
             return Ok(sol);

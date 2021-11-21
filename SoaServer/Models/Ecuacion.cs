@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Data;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using MySqlConnector;
 
 namespace SoaServer.Models
 {
@@ -41,6 +43,10 @@ namespace SoaServer.Models
         /// </value>
         public double D { get => Math.Pow(B,2) - 4*A*C; }
 
+        internal MySqlConnection Db { get; set; }
+
+        public int Id { get; set; }
+
         /// <summary>
         /// Constructor con un parametro.
         /// </summary>
@@ -50,8 +56,9 @@ namespace SoaServer.Models
         /// var eq = new Ecuacion("f(x)=x**2+3x-6");    
         /// </code>
         /// </example>
-        public Ecuacion(string eq)
+        public Ecuacion(string eq, MySqlConnection db)
         {
+            Db = db;
             Eq = eq.Replace(" ", "");
             var eqt = Eq.Split("=")[1];
             try {
@@ -79,6 +86,8 @@ namespace SoaServer.Models
                     c = 0;
                 }
             }
+            Db.Open();
+            insertEq().Wait();
         }
 
         /// <summary>
@@ -93,8 +102,17 @@ namespace SoaServer.Models
         public ICollection<double> Soluciones() 
         {
             if (D < 0) return null;
-            if (D == 0) return new double[] { -B / (2 * A) };
-            return new double[] { (-B + Math.Sqrt(D)) / (2 * A), (-B - Math.Sqrt(D)) / (2 * A) };
+            if (D == 0) 
+            {
+                var s = -B / (2 * A);
+                insertSols(s).Wait();
+                return new double[] { s };
+            }
+            var s1 = (-B + Math.Sqrt(D)) / (2 * A);
+            var s2 = (-B - Math.Sqrt(D)) / (2 * A);
+            insertSols(s1).Wait();
+            insertSols(s2).Wait();
+            return new double[] { s1, s2 };
         }
 
         /// <summary>
@@ -149,13 +167,94 @@ namespace SoaServer.Models
         {
             var ret = $"d{n}f(x)/dx{n}=";
             var aa = 2 * A;
-            if (n >= 3) return ret + "0";
-            if (n == 2) return ret + $"{aa}";
-            if (n == 1) {
-                if (B > 0) return ret + $"{aa}x+{B}";
-                if (B == 0) return ret + $"{aa}x";
+            if (n >= 3) {
+                insertDiff(ret + "0", (int)n).Wait();
+                return ret + "0";
             }
+            if (n == 2) {
+                insertDiff(ret + $"{aa}", (int)n).Wait();
+                return ret + $"{aa}";
+            }
+            if (n == 1) {
+                if (B > 0) {
+                    insertDiff(ret + $"{aa}x+{B}", (int)n).Wait();
+                    return ret + $"{aa}x+{B}";
+                }
+                if (B == 0) {
+                    insertDiff(ret + $"{aa}x", (int)n).Wait();
+                    return ret + $"{aa}x";
+                }
+            }
+            insertDiff(ret + $"{aa}x{B}", (int)n).Wait();
             return ret + $"{aa}x{B}";
+        }
+
+        /// <summary>
+        /// Guarda la ecuacion en la base de datos.
+        /// </summary>
+        /// <returns>retorta un task de la asincronia.</returns>
+        internal async Task insertEq()
+        {
+            using var command = Db.CreateCommand();
+            command.CommandText = @"INSERT INTO `ecuacion` (`eq`) VALUES (@equa)";
+            command.Parameters.Add(new MySqlParameter
+            {
+                ParameterName = "@equa",
+                DbType = DbType.String,
+                Value = Eq
+            });
+            await command.ExecuteNonQueryAsync();
+            Id = (int)command.LastInsertedId;
+        }
+
+        /// <summary>
+        /// Guarda las soluciones en la base de datos.
+        /// </summary>
+        /// <param name="sols">valor de la solucion.</param>
+        /// <returns>retorta un task de la asincronia.</returns>
+        internal async Task insertSols(double sols)
+        {
+            using var command = Db.CreateCommand();
+            command.CommandText = @"INSERT INTO `soluciones` (`sol`, `idEq`) VALUES (@sl, @eq)";
+            command.Parameters.Add(new MySqlParameter {
+                ParameterName = "@sl",
+                DbType = DbType.String,
+                Value = sols
+            });
+            command.Parameters.Add(new MySqlParameter {
+                ParameterName = "@eq",
+                DbType = DbType.Int32,
+                Value = Id
+            });
+            await command.ExecuteNonQueryAsync();
+        }
+
+        /// <summary>
+        /// Guarda la derivada en la base de datos.
+        /// </summary>
+        /// <param name="dif">string de la derivada.</param>
+        /// <param name="grado">grado de la derivada.</param>
+        /// <returns>retorta un task de la asincronia.</returns>
+        internal async Task insertDiff(string dif, int grado)
+        {
+            using var command = Db.CreateCommand();
+            command.CommandText = @"INSERT INTO `derivada` (`gradoDif`, `dif`, `idEq`) VALUES (@gr, @df, @eq)";
+            command.Parameters.Add(new MySqlParameter {
+                ParameterName = "@gr",
+                DbType = DbType.Int32,
+                Value = grado
+            });
+            command.Parameters.Add(new MySqlParameter {
+                ParameterName = "@df",
+                DbType = DbType.String,
+                Value = dif
+            });
+            command.Parameters.Add(new MySqlParameter {
+                ParameterName = "@eq",
+                DbType = DbType.Int32,
+                Value = Id
+            });
+            await command.ExecuteNonQueryAsync();
         }
     }
 }
