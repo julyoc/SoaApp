@@ -196,15 +196,19 @@ namespace SoaServer.Models
         internal async Task insertEq()
         {
             using var command = Db.CreateCommand();
-            command.CommandText = @"INSERT INTO `ecuacion` (`eq`) VALUES (@equa)";
+            //command.CommandText = @"INSERT INTO `ecuacion` (`eq`) VALUES (@equa)";
+            command.CommandText = @"SELECT guardarEcuacion(@equa)";
             command.Parameters.Add(new MySqlParameter
             {
                 ParameterName = "@equa",
                 DbType = DbType.String,
                 Value = Eq
             });
-            await command.ExecuteNonQueryAsync();
-            Id = (int)command.LastInsertedId;
+            var ret = await command.ExecuteReaderAsync();
+            using (ret) {
+                await ret.ReadAsync();
+                Id = ret.GetInt32(0);
+            }
         }
 
         /// <summary>
@@ -215,7 +219,7 @@ namespace SoaServer.Models
         internal async Task insertSols(double sols)
         {
             using var command = Db.CreateCommand();
-            command.CommandText = @"INSERT INTO `soluciones` (`sol`, `idEq`) VALUES (@sl, @eq)";
+            command.CommandText = @"CALL guardarSol(@sl, @eq)";
             command.Parameters.Add(new MySqlParameter {
                 ParameterName = "@sl",
                 DbType = DbType.String,
@@ -238,7 +242,7 @@ namespace SoaServer.Models
         internal async Task insertDiff(string dif, int grado)
         {
             using var command = Db.CreateCommand();
-            command.CommandText = @"INSERT INTO `derivada` (`gradoDif`, `dif`, `idEq`) VALUES (@gr, @df, @eq)";
+            command.CommandText = @"CALL guardarDif(@eq, @gr, @df)";
             command.Parameters.Add(new MySqlParameter {
                 ParameterName = "@gr",
                 DbType = DbType.Int32,
