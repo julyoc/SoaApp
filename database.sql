@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS `ecuacion` (
   `eq` varchar(50) NOT NULL,
   PRIMARY KEY (`idEq`) USING BTREE,
   KEY `idEq` (`idEq`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=latin1 COMMENT='guarda la ecuacion ingresada';
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='guarda la ecuacion ingresada';
 
 -- Dumping data for table soaapp.ecuacion: ~0 rows (approximately)
 /*!40000 ALTER TABLE `ecuacion` DISABLE KEYS */;
